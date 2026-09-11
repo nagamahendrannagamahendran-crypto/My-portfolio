@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naga Mahendran S — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12141c;
+    --surface:#181b27;
+    --surface-2:#1e2230;
+    --border:#2a2f42;
+    --text:#e6e6ef;
+    --muted:#8b90a8;
+    --dim:#5b6180;
+    --blue:#5b8def;
+    --green:#6fcf97;
+    --amber:#f2c572;
+    --pink:#e27396;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    display:flex;
+    min-height:100vh;
+  }
+  ::selection{ background:var(--blue); color:#0c0e14; }
+
+  h1,h2,h3{ font-family:'Space Grotesk', sans-serif; font-weight:600; letter-spacing:-0.01em; }
+  code, .mono{ font-family:'JetBrains Mono', monospace; }
+  a{ color:inherit; text-decoration:none; }
+
+  /* ---------- Sidebar (file explorer) ---------- */
+  .sidebar{
+    width:272px;
+    flex-shrink:0;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    position:fixed;
+    top:0; left:0; bottom:0;
+    display:flex;
+    flex-direction:column;
+    z-index:10;
+  }
+  .sidebar-id{
+    padding:28px 22px 18px;
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar-id .name{
+    font-size:1.15rem;
+    font-weight:700;
+    color:var(--text);
+  }
+  .sidebar-id .role{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.74rem;
+    color:var(--green);
+    margin-top:6px;
+  }
+  .sidebar-id .role::before{ content:"// "; color:var(--dim); }
+
+  .explorer{
+    padding:18px 10px;
+    flex:1;
+    overflow-y:auto;
+  }
+  .explorer-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.68rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--dim);
+    padding:0 12px 8px;
+  }
+  .nav-item{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:8px 12px;
+    border-radius:5px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.85rem;
+    color:var(--muted);
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .nav-item:hover{ background:var(--surface-2); color:var(--text); }
+  .nav-item.active{ background:var(--surface-2); color:var(--blue); }
+  .nav-item.active .dot{ background:var(--blue); }
+  .nav-item .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--dim);
+    flex-shrink:0;
+  }
+
+  .sidebar-foot{
+    padding:16px 22px 22px;
+    border-top:1px solid var(--border);
+    display:flex;
+    gap:14px;
+  }
+  .icon-link{
+    width:34px; height:34px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--border);
+    border-radius:6px;
+    color:var(--muted);
+    transition:border-color .15s, color .15s, transform .15s;
+  }
+  .icon-link:hover{ border-color:var(--blue); color:var(--blue); transform:translateY(-2px); }
+  .icon-link svg{ width:16px; height:16px; }
+
+  /* ---------- Top tab bar ---------- */
+  .top-tabs{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    gap:2px;
+    padding:0 24px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .top-tabs::-webkit-scrollbar{ display:none; }
+  .top-tab{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.82rem;
+    color:var(--muted);
+    padding:15px 16px 13px;
+    white-space:nowrap;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition:color .15s, border-color .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .top-tab:hover{ color:var(--text); }
+  .top-tab.active{ color:var(--blue); border-bottom-color:var(--blue); }
+
+  /* ---------- Main ---------- */
+  .main{
+    margin-left:272px;
+    flex:1;
+    max-width:880px;
+    padding:0 56px 100px;
+  }
+  section{ padding:76px 0 8px; border-top:1px solid transparent; }
+  section:first-of-type{ padding-top:64px; }
+
+  .line-no{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--dim);
+    display:block;
+    margin-bottom:10px;
+  }
+
+  h2.sec-title{
+    font-size:1.7rem;
+    margin-bottom:28px;
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+  }
+  h2.sec-title .ext{ font-family:'JetBrains Mono', monospace; font-size:0.95rem; color:var(--dim); font-weight:400; }
+
+  /* Centered profile header */
+  .profile-header{
+    text-align:center;
+    padding:56px 0 40px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:8px;
+  }
+  .profile-header .p-name{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(2rem, 4.2vw, 2.7rem);
+    letter-spacing:-0.01em;
+  }
+  .profile-header .p-role{
+    font-family:'JetBrains Mono', monospace;
+    color:var(--green);
+    font-size:0.85rem;
+    margin-top:10px;
+  }
+  .profile-header .p-role::before{ content:"// "; color:var(--dim); }
+  .info-row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px 14px;
+    margin-top:24px;
+  }
+  .info-chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.82rem;
+    color:var(--muted);
+    border:1px solid var(--border);
+    padding:8px 14px;
+    border-radius:20px;
+    transition:border-color .15s, color .15s;
+  }
+  .info-chip:hover{ border-color:var(--blue); color:var(--blue); }
+  .info-chip svg{ width:15px; height:15px; color:var(--blue); flex-shrink:0; }
+  .info-chip:hover svg{ color:var(--blue); }
+  .info-sep{ color:var(--dim); font-size:0.8rem; }
+
+  .section-body{ position:relative; overflow:hidden; max-height:52px; transition:max-height .35s ease; }
+  .section-body::after{
+    content:"";
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:28px;
+    background:linear-gradient(to bottom, rgba(18,20,28,0), var(--bg));
+    transition:opacity .25s ease;
+  }
+  .section-body.preview-tall{ max-height:168px; }
+  .section-body.open{ max-height:2400px; }
+  .section-body.open::after{ opacity:0; }
+
+  .section-toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    color:var(--blue);
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    padding:10px 0 4px;
+  }
+  .section-toggle svg{ width:13px; height:13px; transition:transform .25s ease; }
+  .section-toggle.open svg{ transform:rotate(180deg); }
+
+  /* Hero */
+  .hero{ padding-top:20px; }
+  .hero .greet{ font-family:'JetBrains Mono', monospace; color:var(--green); font-size:0.95rem; margin-bottom:18px; }
+  .hero h1{
+    font-size:clamp(2.1rem, 4.6vw, 3.1rem);
+    line-height:1.15;
+    max-width:12ch;
+  }
+  .hero .accent{ color:var(--blue); }
+  .hero p.lede{
+    margin-top:22px;
+    max-width:56ch;
+    color:var(--muted);
+    font-size:1.05rem;
+  }
+  .hero .stat-row{
+    display:flex;
+    gap:36px;
+    margin-top:38px;
+    flex-wrap:wrap;
+  }
+  .stat b{ font-family:'Space Grotesk', sans-serif; font-size:1.6rem; display:block; color:var(--text); }
+  .stat span{ font-size:0.8rem; color:var(--dim); font-family:'JetBrains Mono', monospace; }
+
+  .terminal{
+    margin-top:44px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+    max-width:560px;
+  }
+  .terminal-head{
+    background:var(--surface-2);
+    padding:9px 14px;
+    display:flex;
+    gap:6px;
+  }
+  .terminal-head span{ width:10px; height:10px; border-radius:50%; background:var(--border); }
+  .terminal-body{
+    padding:16px 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.82rem;
+    color:var(--muted);
+  }
+  .terminal-body .prompt{ color:var(--green); }
+  .terminal-body .out{ color:var(--text); margin:4px 0 10px; }
+
+  /* About */
+  p.body-text{ color:var(--muted); max-width:64ch; font-size:1rem; }
+  p.body-text + p.body-text{ margin-top:14px; }
+  p.body-text b{ color:var(--text); font-weight:600; }
+
+  /* Education timeline */
+  .timeline{ border-left:2px solid var(--border); margin-top:6px; }
+  .tl-item{ position:relative; padding:2px 0 34px 28px; }
+  .tl-item::before{
+    content:"";
+    position:absolute; left:-6px; top:5px;
+    width:10px; height:10px; border-radius:50%;
+    background:var(--bg); border:2px solid var(--blue);
+  }
+  .tl-item .tl-year{ font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:var(--amber); }
+  .tl-item h3{ font-size:1.08rem; margin-top:4px; }
+  .tl-item .tl-sub{ color:var(--muted); font-size:0.92rem; margin-top:3px; }
+  .tl-item .tl-score{ display:inline-block; margin-top:8px; font-family:'JetBrains Mono', monospace; font-size:0.76rem; color:var(--green); background:rgba(111,207,151,0.08); border:1px solid rgba(111,207,151,0.25); padding:3px 9px; border-radius:5px; }
+
+  /* Skills */
+  .skill-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(190px,1fr));
+    gap:14px;
+    margin-top:8px;
+  }
+  .skill-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:16px;
+    transition:border-color .15s, transform .15s;
+  }
+  .skill-card:hover{ border-color:var(--blue); transform:translateY(-2px); }
+  .skill-card .icon{ width:26px; height:26px; color:var(--blue); margin-bottom:12px; }
+  .skill-card .label{ font-weight:500; font-size:0.94rem; }
+  .skill-card .tag{ font-family:'JetBrains Mono', monospace; font-size:0.7rem; color:var(--dim); margin-top:3px; display:block; }
+
+  .soft-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
+  .pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    color:var(--amber);
+    border:1px solid rgba(242,197,114,0.3);
+    background:rgba(242,197,114,0.06);
+    padding:6px 12px;
+    border-radius:16px;
+  }
+  .soft-label{ font-size:0.78rem; color:var(--dim); font-family:'JetBrains Mono', monospace; margin-top:34px; margin-bottom:2px; text-transform:uppercase; letter-spacing:.06em;}
+
+  /* Projects */
+  .project{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:24px 26px;
+    margin-bottom:18px;
+    transition:border-color .15s;
+  }
+  .project:hover{ border-color:var(--blue); }
+  .project-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  .project h3{ font-size:1.12rem; }
+  .project .num{ font-family:'JetBrains Mono', monospace; color:var(--dim); font-size:0.8rem; }
+  .project p{ color:var(--muted); margin-top:10px; font-size:0.95rem; max-width:60ch; }
+  .stack-row{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .stack-chip{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--blue);
+    background:rgba(91,141,239,0.08);
+    border:1px solid rgba(91,141,239,0.25);
+    padding:3px 9px;
+    border-radius:5px;
+  }
+
+  /* Experience */
+  .exp-card{
+    display:flex;
+    gap:18px;
+    padding:20px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .exp-card:last-child{ border-bottom:none; }
+  .exp-icon{ width:38px; height:38px; flex-shrink:0; border-radius:8px; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--green); }
+  .exp-icon svg{ width:18px; height:18px; }
+  .exp-card h3{ font-size:1.02rem; }
+  .exp-card .exp-org{ font-family:'JetBrains Mono', monospace; color:var(--dim); font-size:0.8rem; margin-top:2px; }
+  .exp-card p{ color:var(--muted); margin-top:8px; font-size:0.92rem; max-width:58ch; }
+
+  .cert-list{ margin-top:8px; }
+  .cert-item{ display:flex; align-items:center; gap:12px; padding:10px 0; color:var(--muted); font-size:0.94rem; }
+  .cert-item svg{ width:16px; height:16px; color:var(--amber); flex-shrink:0; }
+  .cert-item b{ color:var(--text); font-weight:500; }
+
+  /* Contact */
+  .contact-box{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:40px;
+    margin-top:10px;
+  }
+  .contact-box h2{ font-size:1.6rem; }
+  .contact-box p{ color:var(--muted); margin-top:10px; max-width:50ch; }
+  .contact-links{ display:flex; flex-wrap:wrap; gap:12px; margin-top:26px; }
+  .contact-link{
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--border);
+    padding:11px 16px;
+    border-radius:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.85rem;
+    transition:border-color .15s, color .15s;
+  }
+  .contact-link svg{ width:16px; height:16px; color:var(--blue); }
+  .contact-link:hover{ border-color:var(--blue); color:var(--blue); }
+
+  .contact-form{
+    margin-top:30px;
+    padding-top:26px;
+    border-top:1px solid var(--border);
+  }
+  .form-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .form-field{ flex:1; min-width:180px; display:flex; flex-direction:column; gap:6px; }
+  .form-field label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--dim);
+  }
+  .form-field input,
+  .form-field textarea{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:7px;
+    padding:11px 13px;
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    font-size:0.92rem;
+    resize:vertical;
+    transition:border-color .15s;
+  }
+  .form-field input:focus,
+  .form-field textarea:focus{
+    outline:none;
+    border-color:var(--blue);
+  }
+  .form-field textarea{ min-height:110px; }
+  .form-submit{
+    margin-top:6px;
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    background:var(--blue);
+    color:#0c0e14;
+    border:none;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:600;
+    font-size:0.85rem;
+    padding:11px 20px;
+    border-radius:7px;
+    cursor:pointer;
+    transition:opacity .15s, transform .15s;
+  }
+  .form-submit:hover{ opacity:0.88; transform:translateY(-1px); }
+  .form-submit svg{ width:15px; height:15px; }
+  .form-note{
+    margin-top:12px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--dim);
+  }
+
+  .status-bar{
+    position:fixed; bottom:0; left:272px; right:0;
+    background:var(--surface-2);
+    border-top:1px solid var(--border);
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.7rem;
+    color:var(--dim);
+    padding:6px 24px;
+    display:flex;
+    justify-content:space-between;
+    z-index:8;
+  }
+  .status-bar span b{ color:var(--green); font-weight:500; }
+
+  @media (max-width: 860px){
+    .sidebar{ display:none; }
+    .main{ margin-left:0; max-width:100%; padding:0 22px 100px; }
+    .status-bar{ left:0; }
+  }
+</style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-id">
+      <div class="name">N. Mahendran</div>
+      <div class="role">portfolio</div>
+    </div>
+    <nav class="explorer">
+      <div class="explorer-label">portfolio /</div>
+      <div class="nav-item" data-target="hero"><span class="dot"></span> intro.md</div>
+      <div class="nav-item" data-target="about"><span class="dot"></span> about.md</div>
+      <div class="nav-item" data-target="education"><span class="dot"></span> education.json</div>
+      <div class="nav-item" data-target="skills"><span class="dot"></span> skills.ts</div>
+      <div class="nav-item" data-target="projects"><span class="dot"></span> projects/</div>
+      <div class="nav-item" data-target="experience"><span class="dot"></span> experience.log</div>
+      <div class="nav-item" data-target="contact"><span class="dot"></span> contact.sh</div>
+    </nav>
+    <div class="sidebar-foot">
+      <a class="icon-link" href="mailto:nagamahendran006@gmail.com" title="Email" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+      </a>
+      <a class="icon-link" href="https://www.linkedin.com/in/naga-mahendran-s-2b390b2a4" title="LinkedIn" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7.5" y1="10" x2="7.5" y2="17"/><circle cx="7.5" cy="6.8" r="0.9" fill="currentColor" stroke="none"/><path d="M11.5 17v-4.2c0-1.4 1-2.3 2.3-2.3 1.3 0 2.2 0.9 2.2 2.3V17"/></svg>
+      </a>
+      <a class="icon-link" href="https://github.com/nagamahendrannagamahendran-crypto" title="GitHub" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-3.16 19.5c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.93 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.83-2.34 4.68-4.57 4.92.36.31.68.92.68 1.85v2.75c0 .26.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <nav class="top-tabs" id="top-tabs">
+      <div class="top-tab" data-target="hero">intro</div>
+      <div class="top-tab" data-target="about">about</div>
+      <div class="top-tab" data-target="education">education</div>
+      <div class="top-tab" data-target="skills">skills</div>
+      <div class="top-tab" data-target="projects">projects</div>
+      <div class="top-tab" data-target="experience">experience</div>
+      <div class="top-tab" data-target="contact">contact</div>
+    </nav>
+
+    <div class="profile-header">
+      <div class="p-name">Naga Mahendran S</div>
+      <div class="p-role">final-year-cse-student</div>
+      <div class="info-row">
+        <a class="info-chip" href="mailto:nagamahendran006@gmail.com" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          nagamahendran006@gmail.com
+        </a>
+        <a class="info-chip" href="tel:+919025385168">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg>
+          +91-9025385168
+        </a>
+        <a class="info-chip" href="https://www.linkedin.com/in/naga-mahendran-s-2b390b2a4" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7.5" y1="10" x2="7.5" y2="17"/><circle cx="7.5" cy="6.8" r="0.9" fill="currentColor" stroke="none"/><path d="M11.5 17v-4.2c0-1.4 1-2.3 2.3-2.3 1.3 0 2.2 0.9 2.2 2.3V17"/></svg>
+          LinkedIn
+        </a>
+        <a class="info-chip" href="https://github.com/nagamahendrannagamahendran-crypto" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-3.16 19.5c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.93 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.83-2.34 4.68-4.57 4.92.36.31.68.92.68 1.85v2.75c0 .26.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+
+    <section id="hero" class="hero">
+      <div class="greet">$ whoami</div>
+      <h1>Building things,<br> one <span class="accent">commit</span> at a time.</h1>
+      <p class="lede">I'm a final-year Computer Science student who likes turning ideas into working software — from restaurant sites to AI-flavoured chatbots. Currently sharpening my Java and Spring Boot, and looking for an entry-level Software Engineer role where I can keep learning by shipping.</p>
+
+      <div class="stat-row">
+        <div class="stat"><b>7.91</b><span>CGPA / 10</span></div>
+        <div class="stat"><b>3</b><span>projects shipped</span></div>
+        <div class="stat"><b>2027</b><span>expected graduation</span></div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-head"><span></span><span></span><span></span></div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> git log --author="Naga" --oneline -3</div>
+          <div class="out">a1c92e4  build: e-commerce cart + checkout flow</div>
+          <div class="out">7f38b10  feat: crop advisory chatbot (AI-based)</div>
+          <div class="out">2d4e6c9  init: smart restaurant website</div>
+          <div><span class="prompt">$</span> <span style="color:var(--text)">_</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about">
+      <span class="line-no">01</span>
+      <h2 class="sec-title">About <span class="ext">// objective</span></h2>
+      <div class="section-body" id="body-about">
+        <p class="body-text">I'm a final-year CSE student carrying a <b>7.88–7.91 CGPA</b>, comfortable across <b>Java, Spring Boot, OOP, HTML, CSS and Data Structures</b>. What actually pulls me in is the intersection of software development and AI — I like problems that need both solid engineering and a bit of curiosity to solve.</p>
+        <p class="body-text">I'm looking for an <b>entry-level Software Engineer role</b> where I can apply what I've learned so far, keep learning fast, and contribute to real-world projects rather than toy ones.</p>
+      </div>
+      <div class="section-toggle" data-target="body-about" role="button" tabindex="0" aria-expanded="false" aria-controls="body-about">
+        <span class="toggle-label">expand</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </section>
+
+    <section id="education">
+      <span class="line-no">02</span>
+      <h2 class="sec-title">Education <span class="ext">// education.json</span></h2>
+      <div class="section-body preview-tall" id="body-education">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-year">2023 — 2027 (expected)</div>
+          <h3>B.E. Computer Science &amp; Engineering</h3>
+          <div class="tl-sub">PSRR College of Engineering</div>
+          <span class="tl-score">CGPA 7.91 / 10</span>
+        </div>
+        <div class="tl-item">
+          <div class="tl-year">2023</div>
+          <h3>Higher Secondary Certificate (HSC)</h3>
+          <div class="tl-sub">Nadar Hr Sec School</div>
+          <span class="tl-score">81%</span>
+        </div>
+        <div class="tl-item">
+          <div class="tl-year">2021</div>
+          <h3>Secondary School Leaving Certificate (SSLC)</h3>
+          <div class="tl-sub">Nadar Matric Hr Sec School</div>
+          <span class="tl-score">100%</span>
+        </div>
+      </div>
+      </div>
+      <div class="section-toggle" data-target="body-education" role="button" tabindex="0" aria-expanded="false" aria-controls="body-education">
+        <span class="toggle-label">expand</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </section>
+
+    <section id="skills">
+      <span class="line-no">03</span>
+      <h2 class="sec-title">Skills <span class="ext">// skills.ts</span></h2>
+      <div class="section-body preview-tall" id="body-skills">
+      <div class="skill-grid">
+
+        <div class="skill-card">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3c-1 2 3 2.5 1 5"/><path d="M6 11h11a1 1 0 0 1 1 1c0 3-2.5 6-6.5 6S5 15 5 12a1 1 0 0 1 1-1z"/><path d="M17.5 11.5c1.5-.3 2.5.6 2.5 1.8 0 1.3-1.2 2-2.7 1.9"/><path d="M5 19h11"/></svg>
+          <div class="label">Java</div>
+          <span class="tag">programming language</span>
+        </div>
+
+        <div class="skill-card">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4.5 4-7 8.5-4 14 1-1.5 2-2 3-2.2C10 17 9.7 19 9 21c5-1 8-5 7-10-.6 1-1.5 1.6-2.5 1.8C14.3 9 13.6 5.8 12 3z"/></svg>
+          <div class="label">Spring Boot</div>
+          <span class="tag">framework · basic</span>
+        </div>
+
+        <div class="skill-card">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 4 2 12 4 20"/><polyline points="20 4 22 12 20 20"/><line x1="14.5" y1="4" x2="9.5" y2="20"/></svg>
+          <div class="label">HTML &amp; CSS</div>
+          <span class="tag">web technologies</span>
+        </div>
+
+        <div class="skill-card">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1"/><rect x="14" y="4" width="7" height="7" rx="1"/><rect x="3" y="15" width="7" height="7" rx="1"/><line x1="14" y1="7.5" x2="21" y2="7.5" stroke-opacity="0"/><path d="M17.5 11v9"/></svg>
+          <div class="label">OOP</div>
+          <span class="tag">core concepts</span>
+        </div>
+
+        <div class="skill-card">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="4" height="7" rx="0.5"/><rect x="10" y="6" width="4" height="11" rx="0.5"/><rect x="17" y="13" width="4" height="4" rx="0.5"/></svg>
+          <div class="label">Data Structures</div>
+          <span class="tag">arrays · basic</span>
+        </div>
+
+        <div class="skill-card">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 8.2V15.8"/><path d="M8 6.8c4 .5 6 2 8 4.2"/></svg>
+          <div class="label">Git &amp; GitHub</div>
+          <span class="tag">version control</span>
+        </div>
+
+        <div class="skill-card">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/><circle cx="6" cy="6.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="8.3" cy="6.5" r="0.6" fill="currentColor" stroke="none"/></svg>
+          <div class="label">Eclipse &amp; VS Code</div>
+          <span class="tag">dev tools</span>
+        </div>
+      </div>
+
+      <div class="soft-label">soft skills</div>
+      <div class="soft-row">
+        <span class="pill">Hardworking</span>
+        <span class="pill">Self-Motivated</span>
+        <span class="pill">Consistent</span>
+        <span class="pill">Communication</span>
+      </div>
+      </div>
+      <div class="section-toggle" data-target="body-skills" role="button" tabindex="0" aria-expanded="false" aria-controls="body-skills">
+        <span class="toggle-label">expand</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </section>
+
+    <section id="projects">
+      <span class="line-no">04</span>
+      <h2 class="sec-title">Projects <span class="ext">// projects/</span></h2>
+
+      <div class="section-body preview-tall" id="body-projects">
+      <div class="project">
+        <div class="project-top">
+          <h3>Smart Restaurant Website</h3>
+          <span class="num">01</span>
+        </div>
+        <p>A responsive restaurant website with an interactive interface and a live menu display, built to feel usable on any screen size.</p>
+        <div class="stack-row">
+          <span class="stack-chip">HTML</span><span class="stack-chip">CSS</span><span class="stack-chip">JavaScript</span>
+        </div>
+      </div>
+
+      <div class="project">
+        <div class="project-top">
+          <h3>Smart Crop Advisory Chatbot</h3>
+          <span class="num">02</span>
+        </div>
+        <p>An AI-based chatbot that answers farming queries with crop recommendations and guidance, aimed at making agri-advice easier to access.</p>
+        <div class="stack-row">
+          <span class="stack-chip">AI / NLP</span><span class="stack-chip">Chatbot Logic</span>
+        </div>
+      </div>
+
+      <div class="project">
+        <div class="project-top">
+          <h3>E-Commerce Website</h3>
+          <span class="num">03</span>
+        </div>
+        <p>A responsive e-commerce site with product listings, a shopping cart, and navigation built around ease of browsing and checkout.</p>
+        <div class="stack-row">
+          <span class="stack-chip">HTML</span><span class="stack-chip">CSS</span><span class="stack-chip">JavaScript</span>
+        </div>
+      </div>
+      </div>
+      <div class="section-toggle" data-target="body-projects" role="button" tabindex="0" aria-expanded="false" aria-controls="body-projects">
+        <span class="toggle-label">expand</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </section>
+
+    <section id="experience">
+      <span class="line-no">05</span>
+      <h2 class="sec-title">Experience <span class="ext">// experience.log</span></h2>
+
+      <div class="section-body preview-tall" id="body-experience">
+      <div class="exp-card">
+        <div class="exp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </div>
+        <div>
+          <h3>Web Development Intern</h3>
+          <div class="exp-org">InternPe Technology</div>
+          <p>Completed hands-on training in HTML, CSS, JavaScript, and building responsive websites.</p>
+        </div>
+      </div>
+
+      <div class="soft-label" style="margin-top:36px;">certifications</div>
+      <div class="cert-list">
+        <div class="cert-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5 7 21l5-3 5 3-1.5-8.5"/></svg>
+          <span><b>Web Development</b> — InternPe Technology</span>
+        </div>
+        <div class="cert-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5 7 21l5-3 5 3-1.5-8.5"/></svg>
+          <span><b>Introduction to Java</b> — SoloLearn</span>
+        </div>
+      </div>
+      </div>
+      <div class="section-toggle" data-target="body-experience" role="button" tabindex="0" aria-expanded="false" aria-controls="body-experience">
+        <span class="toggle-label">expand</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </section>
+
+    <section id="contact">
+      <span class="line-no">06</span>
+      <h2 class="sec-title">Contact <span class="ext">// contact.sh</span></h2>
+      <div class="contact-box">
+        <h2>Let's build something.</h2>
+        <p>Open to entry-level Software Engineer roles and internships. The fastest way to reach me is email — I'll reply quickly.</p>
+        <div class="contact-links">
+          <a class="contact-link" href="mailto:nagamahendran006@gmail.com" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            nagamahendran006@gmail.com
+          </a>
+          <a class="contact-link" href="tel:+919025385168">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.5 2.1L8 9.7a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.7 2z"/></svg>
+            +91-9025385168
+          </a>
+          <a class="contact-link" href="https://www.linkedin.com/in/naga-mahendran-s-2b390b2a4" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7.5" y1="10" x2="7.5" y2="17"/><circle cx="7.5" cy="6.8" r="0.9" fill="currentColor" stroke="none"/><path d="M11.5 17v-4.2c0-1.4 1-2.3 2.3-2.3 1.3 0 2.2 0.9 2.2 2.3V17"/></svg>
+            LinkedIn
+          </a>
+          <a class="contact-link" href="https://github.com/nagamahendrannagamahendran-crypto" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-3.16 19.5c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.56-1.11-4.56-4.93 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.83-2.34 4.68-4.57 4.92.36.31.68.92.68 1.85v2.75c0 .26.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+            GitHub
+          </a>
+        </div>
+
+        <form class="contact-form" id="contact-form">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cf-name">Your name</label>
+              <input type="text" id="cf-name" name="name" placeholder="Jane Recruiter" required>
+            </div>
+            <div class="form-field">
+              <label for="cf-email">Your email</label>
+              <input type="email" id="cf-email" name="email" placeholder="you@company.com" required>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="cf-message">Message</label>
+            <textarea id="cf-message" name="message" placeholder="Hi Naga, we're hiring for..." required></textarea>
+          </div>
+          <button type="submit" class="form-submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send message
+          </button>
+          <div class="form-note">Opens your email app with this addressed to nagamahendran006@gmail.com — nothing is sent from this page directly.</div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="status-bar">
+    <span><b>●</b> available for hire</span>
+    <span id="status-section">intro.md</span>
+  </div>
+
+<script>
+  const navItems = document.querySelectorAll('.nav-item');
+  const topTabs = document.querySelectorAll('.top-tab');
+  const sections = document.querySelectorAll('main section');
+  const statusLabel = document.getElementById('status-section');
+  const fileNames = {
+    hero:'intro.md', about:'about.md', education:'education.json',
+    skills:'skills.ts', projects:'projects/', experience:'experience.log', contact:'contact.sh'
+  };
+
+  [...navItems, ...topTabs].forEach(item=>{
+    item.addEventListener('click', ()=>{
+      document.getElementById(item.dataset.target).scrollIntoView({behavior:'smooth'});
+    });
+  });
+
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        navItems.forEach(n=>n.classList.remove('active'));
+        topTabs.forEach(t=>t.classList.remove('active'));
+        const activeNav = document.querySelector('.nav-item[data-target="'+entry.target.id+'"]');
+        const activeTab = document.querySelector('.top-tab[data-target="'+entry.target.id+'"]');
+        if(activeNav) activeNav.classList.add('active');
+        if(activeTab) activeTab.classList.add('active');
+        statusLabel.textContent = fileNames[entry.target.id] || '';
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+
+  sections.forEach(sec=>observer.observe(sec));
+
+  // Expand/collapse for every section
+  document.querySelectorAll('.section-toggle').forEach(toggle=>{
+    const body = document.getElementById(toggle.dataset.target);
+    const label = toggle.querySelector('.toggle-label');
+
+    function toggleBody(){
+      const isOpen = body.classList.toggle('open');
+      toggle.classList.toggle('open', isOpen);
+      toggle.setAttribute('aria-expanded', isOpen);
+      label.textContent = isOpen ? 'collapse' : 'expand';
+    }
+
+    toggle.addEventListener('click', toggleBody);
+    toggle.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        toggleBody();
+      }
+    });
+  });
+
+  // Contact form -> opens the visitor's email client, pre-filled
+  const contactForm = document.getElementById('contact-form');
+  contactForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const name = document.getElementById('cf-name').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const message = document.getElementById('cf-message').value.trim();
+
+    const subject = 'Portfolio contact from ' + name;
+    const body = message + '\n\n---\nFrom: ' + name + ' (' + email + ')';
+
+    const mailto = 'mailto:nagamahendran006@gmail.com'
+      + '?subject=' + encodeURIComponent(subject)
+      + '&body=' + encodeURIComponent(body);
+
+    window.location.href = mailto;
+  });
+</script>
+
+</body>
+</html>
